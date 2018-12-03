@@ -27,7 +27,7 @@ object HiveJieba {
           val segV = seg.value
           segV.process(sentence.toString, SegMode.INDEX)
             .toArray().map(_.asInstanceOf[SegToken].word)
-            .filter(_.length>1).mkString("/")
+            .filter(_.length>1  ).mkString("/")
       }
       df.withColumn("seg", jieba_udf(col(columnName)))
     }
