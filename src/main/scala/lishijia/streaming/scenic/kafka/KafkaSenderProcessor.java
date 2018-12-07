@@ -18,11 +18,12 @@ public class KafkaSenderProcessor {
     public boolean send(String value, String topic) {
 
         try {
-            ProducerRecord<String, String> msg = new ProducerRecord<String, String>(topic, 0, null, value);
+            ProducerRecord<String, String> msg = new ProducerRecord<String, String>(topic, null, value);
             Future<RecordMetadata> f = kafkaProducer.send(msg);
             RecordMetadata resp = f.get();
             logger.info(" send message topic: " + topic + ", offset : " + resp.offset());
         } catch (Exception e) {
+            e.printStackTrace();
             logger.error(e.getMessage(), e);
             return false;
         }
@@ -31,10 +32,9 @@ public class KafkaSenderProcessor {
     }
 
     public void init() {
-
         Properties props = new Properties();
         long begin = System.currentTimeMillis();
-        props.put("group.id", "local_sync");
+        props.put("metadata.broker.list", kafkaConfiguration.getFullIp());
         props.put("key.serializer", kafkaConfiguration.getKeySerializer());
         props.put("value.serializer", kafkaConfiguration.getValueSerializer());
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaConfiguration.getFullIp());
