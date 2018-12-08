@@ -18,7 +18,7 @@ public class KafkaApp {
         processor.init();
         Random s = new Random();
         for(int i=0;i<10000;i++){
-            Order order = new Order();
+            Orders order = new Orders();
             int code = (s.nextInt(9)+1);
             order.setScenic_code("s000" + code);
             order.setScenic_name("景区s000" + code);
@@ -30,9 +30,10 @@ public class KafkaApp {
             order.setSettle_amount("110.00");
             order.setCertificate_no("430502xxxx06176212");
             order.setMobile_no("136xxxx6224");
-            Thread.sleep(1000);
             //发送消息
             processor.send(JSONObject.toJSONString(order), "orderTopic");
+            System.out.println("send mess i = " + i);
+            Thread.sleep(1000);
         }
         System.out.println("done");
     }

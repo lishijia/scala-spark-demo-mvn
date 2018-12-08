@@ -2,7 +2,7 @@ package lishijia.streaming.scenic.kafka;
 
 import java.io.Serializable;
 
-public class Order implements Serializable{
+public class Orders implements Serializable{
 
     private String scenic_code;
     private String scenic_name;

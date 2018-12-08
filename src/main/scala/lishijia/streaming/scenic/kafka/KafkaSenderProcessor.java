@@ -34,7 +34,6 @@ public class KafkaSenderProcessor {
     public void init() {
         Properties props = new Properties();
         long begin = System.currentTimeMillis();
-        props.put("metadata.broker.list", kafkaConfiguration.getFullIp());
         props.put("key.serializer", kafkaConfiguration.getKeySerializer());
         props.put("value.serializer", kafkaConfiguration.getValueSerializer());
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaConfiguration.getFullIp());
