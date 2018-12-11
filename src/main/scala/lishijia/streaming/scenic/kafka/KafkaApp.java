@@ -2,6 +2,8 @@ package lishijia.streaming.scenic.kafka;
 
 import com.alibaba.fastjson.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
 
@@ -11,6 +13,9 @@ import java.util.UUID;
 public class KafkaApp {
 
     public static void main(String args[]) throws InterruptedException {
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd  HH:mm:ss");
+
         KafkaSenderProcessor processor = new KafkaSenderProcessor();
         KafkaConfiguration configuration = new KafkaConfiguration();
         configuration.setHost("hadoop101:9092,hadoop102:9092,hadoop103:9092");
@@ -24,8 +29,8 @@ public class KafkaApp {
             order.setScenic_name("景区s000" + code);
             order.setChannel_name("销售渠道c00" + code);
             order.setChannel_code("c00" + code);
-            order.setOrder_no(UUID.randomUUID().toString().replace("-",""));
-            order.setPlace_time("2018-12-05 12:23:12");
+            order.setOrder_no(System.currentTimeMillis()+"");
+            order.setPlace_time(format.format(new Date()));
             order.setSettle_price("110.00");
             order.setSettle_amount("110.00");
             order.setCertificate_no("430502xxxx06176212");

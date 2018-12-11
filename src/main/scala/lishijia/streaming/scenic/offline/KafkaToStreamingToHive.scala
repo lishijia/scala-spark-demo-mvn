@@ -58,30 +58,23 @@ object KafkaToStreamingToHive {
          km.updateZKOffsets(rdd)
     })
 
-    message.foreachRDD{rdd=>
-//      print("this is froeach rdd")
-//      //val orderDf = rdd2DF(rdd)
-//      //orderDf.write.mode(SaveMode.Append).insertInto("lishijia.s_order")
-//      rdd.map{ x=>
-//          print(x)
-//      }
-      val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
-      for(offsize <- offsetRanges){
-        km.commitOffsetsToZK(offsetRanges)
-        println(s"${offsize.topic} ${offsize.partition} ${offsize.fromOffset}  ${offsize.untilOffset}")
-        //        badou 0 2798598  2798627
-      }
-      println()
-    }
-
     ssc.start()
     ssc.awaitTermination()
   }
 
-  def processRdd(rdd: RDD[(String, String)]): Unit ={
-    rdd.map{ x =>
-      println(x._2)
-    }
+  def processRdd(rdd: RDD[(String, String)]): Unit = {
+//    rdd.map(_._2).foreach(
+//      x=>
+//        println(x)
+//    )
+//    insertInto()
+//    无关schema,只按数据的顺序插入,类似hive导入csv.
+//      mode(SaveMode.Append).saveAsTable()
+//    如果表已存在,需要匹配插入数据和已有数据的format,partiton等参数的区别,如果有区别会插入出错.如:没有提供partitionBy.
+//    使用已存在的表的schema的column进行数据插入匹配
+      val orders = rdd.map(_._2)
+      val df = rdd2DF(orders)
+      df.write.mode(SaveMode.Append).insertInto("lishijia.s_order")
   }
 
   /**
@@ -105,12 +98,14 @@ object KafkaToStreamingToHive {
     rdd.map{x=>
       val order = JSON.parseObject(x, classOf[Orders])
       import java.text.SimpleDateFormat
-      val aDate = new SimpleDateFormat("yyyy")
-      val place_year = aDate.format(new Date(order.getPlace_time))
-      Order(order.getScenic_code, order.getScenic_name, order.getChannel_name, order.getChannel_code,
+      val aDate = new SimpleDateFormat("yyyy-MM-dd")
+      val place_year = aDate.parse(order.getPlace_time).getYear.toString
+      Order(order.getScenic_name, order.getChannel_name, order.getChannel_code,
         order.getOrder_no, order.getPlace_time, order.getSettle_price, order.getSettle_amount, order.getCertificate_no,
-        order.getMobile_no, order.getBuy_number, place_year)
+        order.getMobile_no, order.getBuy_number, order.getScenic_code,  place_year)
     }.toDF()
   }
+
+
 
 }
