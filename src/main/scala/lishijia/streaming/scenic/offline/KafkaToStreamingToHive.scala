@@ -1,24 +1,18 @@
 package lishijia.streaming.scenic.offline
 
-import java.text.SimpleDateFormat
-import java.util
-import java.util.Date
-
-import com.alibaba.fastjson.{JSON, JSONObject}
+import com.alibaba.fastjson.JSON
 import kafka.serializer.StringDecoder
 import lishijia.streaming.scenic.kafka.Orders
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
-import org.apache.spark.streaming.kafka.{HasOffsetRanges, KafkaManager, KafkaManagerV1, OffsetRange}
+import org.apache.spark.streaming.kafka.KafkaManagerV1
 import org.apache.spark.streaming.{Seconds, StreamingContext}
-import org.scalatest.time.Second
 
-//https://blog.csdn.net/duan_zhihua/article/details/52006054?locationNum=11
-//https://blog.csdn.net/ligt0610/article/details/47311771
-//https://www.jianshu.com/p/2369a020e604
-//http://www.zhangrenhua.com/2016/08/02/hadoop-spark-streaming%E6%95%B0%E6%8D%AE%E6%97%A0%E4%B8%A2%E5%A4%B1%E8%AF%BB%E5%8F%96kafka%EF%BC%8C%E4%BB%A5%E5%8F%8A%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/
+/**
+  * Streaming对接Kafka消息，然后入库到Hive中
+  */
 object KafkaToStreamingToHive {
 
   case class Order(scenic_code:String,scenic_name:String,channel_name:String,channel_code:String,order_no:String
@@ -40,9 +34,6 @@ object KafkaToStreamingToHive {
 
     val kafkaParams = Map[String, String]("metadata.broker.list" -> brokers,
     "group.id" -> consumer)
-//    val kafkaParamMap = new util.HashMap[String, String]()
-//    kafkaParamMap.put("metadata.broker.list", "master201")
-//    kafkaParamMap.put("group.id", "offline_consume")
 
     val km = new KafkaManagerV1(kafkaParams)
     val message = km.createDirectStream[
@@ -63,17 +54,9 @@ object KafkaToStreamingToHive {
   }
 
   def processRdd(rdd: RDD[(String, String)]): Unit = {
-//    rdd.map(_._2).foreach(
-//      x=>
-//        println(x)
-//    )
-//    insertInto()
-//    无关schema,只按数据的顺序插入,类似hive导入csv.
-//      mode(SaveMode.Append).saveAsTable()
-//    如果表已存在,需要匹配插入数据和已有数据的format,partiton等参数的区别,如果有区别会插入出错.如:没有提供partitionBy.
-//    使用已存在的表的schema的column进行数据插入匹配
       val orders = rdd.map(_._2)
       val df = rdd2DF(orders)
+      //通过mode来指定输出文件的是append。创建新文件来追加文件
       df.write.mode(SaveMode.Append).insertInto("lishijia.s_order")
   }
 
