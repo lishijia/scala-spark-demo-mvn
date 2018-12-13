@@ -1,5 +1,7 @@
 package lishijia.streaming.scenic.offline
 
+import java.util.Calendar
+
 import com.alibaba.fastjson.JSON
 import kafka.serializer.StringDecoder
 import lishijia.streaming.scenic.kafka.Orders
@@ -23,8 +25,8 @@ object KafkaToStreamingToHive {
     Logger.getLogger("org.apache.spark").setLevel(Level.ERROR)
 
     val Array(brokers, topics, consumer) =
-      Array("hadoop101:9092,hadoop102:9092,hadoop103:9092",
-      "orderTopic",
+      Array("master201:9092,slave202:9092,slave203:9092",
+      "orderTopicV1",
       "offline_consume")
 
     val conf = new SparkConf().setAppName("KafkaToStreamingToHive").setMaster("local[2]")
@@ -55,6 +57,9 @@ object KafkaToStreamingToHive {
 
   def processRdd(rdd: RDD[(String, String)]): Unit = {
       val orders = rdd.map(_._2)
+
+      orders.foreach(println)
+
       val df = rdd2DF(orders)
       //通过mode来指定输出文件的是append。创建新文件来追加文件
       df.write.mode(SaveMode.Append).insertInto("lishijia.s_order")
@@ -82,10 +87,12 @@ object KafkaToStreamingToHive {
       val order = JSON.parseObject(x, classOf[Orders])
       import java.text.SimpleDateFormat
       val aDate = new SimpleDateFormat("yyyy-MM-dd")
-      val place_year = aDate.parse(order.getPlace_time).getYear.toString
+      val place_time = aDate.parse(order.getPlace_time)
+      val cl = Calendar.getInstance()
+      cl.setTime(place_time)
       Order(order.getScenic_name, order.getChannel_name, order.getChannel_code,
         order.getOrder_no, order.getPlace_time, order.getSettle_price, order.getSettle_amount, order.getCertificate_no,
-        order.getMobile_no, order.getBuy_number, order.getScenic_code,  place_year)
+        order.getMobile_no, order.getBuy_number, order.getScenic_code,  cl.get(Calendar.YEAR)+"")
     }.toDF()
   }
 

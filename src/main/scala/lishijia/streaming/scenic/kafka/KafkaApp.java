@@ -14,11 +14,11 @@ public class KafkaApp {
 
     public static void main(String args[]) throws InterruptedException {
 
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd  HH:mm:ss");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss");
 
         KafkaSenderProcessor processor = new KafkaSenderProcessor();
         KafkaConfiguration configuration = new KafkaConfiguration();
-        configuration.setHost("hadoop101:9092,hadoop102:9092,hadoop103:9092");
+        configuration.setHost("master201:9092,slave202:9092,slave203:9092");
         processor.setKafkaConfiguration(configuration);
         processor.init();
         Random s = new Random();
@@ -36,7 +36,7 @@ public class KafkaApp {
             order.setCertificate_no("430502xxxx06176212");
             order.setMobile_no("136xxxx6224");
             //发送消息
-            processor.send(JSONObject.toJSONString(order), "orderTopic");
+            processor.send(JSONObject.toJSONString(order), "orderTopicV1");
             System.out.println("send mess i = " + i);
             Thread.sleep(1000);
         }
